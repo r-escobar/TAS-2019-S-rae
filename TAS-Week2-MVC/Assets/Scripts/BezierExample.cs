@@ -57,9 +57,9 @@ public class BezierExample : MonoBehaviour
     {
         float dist = 0;
 
-        for (float i = 0; i < 1; i += 0.01f)
+        for (float i = 0; i < 1; i += 0.001f)
         {
-            dist += Vector3.Distance(EvaluateCurve(i), EvaluateCurve(i + 0.01f));
+            dist += Vector3.Distance(EvaluateCurve(i), EvaluateCurve(i + 0.001f));
         }
 
         approxCurveLength = dist;

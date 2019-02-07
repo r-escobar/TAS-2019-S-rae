@@ -17,7 +17,7 @@ public class LookAtUnityBezier : MonoBehaviour
 
     
     [Header("Movement Variables")]
-    private float t;
+    public float t;
     private Vector3 oldCamPos;
 
     public float moveSpeed = 10f;
@@ -36,14 +36,27 @@ public class LookAtUnityBezier : MonoBehaviour
             curCurveIndex = 0;
         }
         
+
+        
+        
         newCamPos = curveList[curCurveIndex].EvaluateCurve(t - curCurveIndex);
         camTransform.position = newCamPos;
 
-        Vector3 lookVector = (newCamPos - oldCamPos).normalized;   
+        
+        
+        Vector3 lookVector = (newCamPos - oldCamPos);
+        float prevDist = lookVector.magnitude;
+        lookVector.Normalize();
+        //Vector3 relativeUp = Vector3.Cross(lookVector, camTransform.right);
         camTransform.rotation = Quaternion.Slerp(camTransform.rotation, Quaternion.LookRotation(lookVector, Vector3.up), rotationSmoothing);
 
+        float tgtDist = Time.deltaTime * moveSpeed;
 
-        t += Time.deltaTime * moveSpeed;
+        //float distAdjustment = prevDist / tgtDist;
+
+        //t += Time.deltaTime * moveSpeed;
+        t += curveList[curCurveIndex].GetPercentageProgress(Time.deltaTime * moveSpeed);
+
     }
 }
 
