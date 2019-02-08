@@ -62,13 +62,13 @@ public class DrawBezierExample : Editor
 
     void OnEnable()
     {
-        Debug.Log("OnEnable");
+        //Debug.Log("OnEnable");
         SceneView.onSceneGUIDelegate += OnSceneViewGUI;
     }
 
     void OnDisable()
     {
-        Debug.Log("OnDisable");
+        //Debug.Log("OnDisable");
         SceneView.onSceneGUIDelegate -= OnSceneViewGUI;
     }
 }

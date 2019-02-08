@@ -23,6 +23,14 @@ public class LookAtUnityBezier : MonoBehaviour
     public float moveSpeed = 10f;
     public float rotationSmoothing = 0.1f;
 
+    private float speedAdjustment;
+    public float accelerationSpeed = 0.1f;
+
+    void Start()
+    {
+        speedAdjustment = moveSpeed / 10f;
+    }
+    
     private void Update()
     {
         int curCurveIndex = (int) t;
@@ -36,13 +44,9 @@ public class LookAtUnityBezier : MonoBehaviour
             curCurveIndex = 0;
         }
         
-
-        
-        
         newCamPos = curveList[curCurveIndex].EvaluateCurve(t - curCurveIndex);
         camTransform.position = newCamPos;
 
-        
         
         Vector3 lookVector = (newCamPos - oldCamPos);
         float prevDist = lookVector.magnitude;
@@ -52,10 +56,16 @@ public class LookAtUnityBezier : MonoBehaviour
 
         float tgtDist = Time.deltaTime * moveSpeed;
 
-        //float distAdjustment = prevDist / tgtDist;
-
-        //t += Time.deltaTime * moveSpeed;
-        t += curveList[curCurveIndex].GetPercentageProgress(Time.deltaTime * moveSpeed);
+        if (prevDist < tgtDist)
+        {
+            speedAdjustment *= 1f + accelerationSpeed;
+        }
+        else
+        {
+            speedAdjustment *= 1f - accelerationSpeed;
+        }
+        
+        t += curveList[curCurveIndex].GetPercentageProgress(Time.deltaTime * speedAdjustment);
 
     }
 }

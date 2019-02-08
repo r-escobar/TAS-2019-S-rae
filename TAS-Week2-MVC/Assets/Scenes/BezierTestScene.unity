@@ -223,9 +223,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 501166913}
-  - component: {fileID: 501166912}
-  - component: {fileID: 501166914}
   - component: {fileID: 501166915}
+  - component: {fileID: 501166914}
+  - component: {fileID: 501166912}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -245,15 +245,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc27d20fef5a5c46970acd7754f787f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPoint: {x: -6.544819, y: 1.3132236, z: 0}
-  startTangent: {x: -4.577779, y: 7.2270975, z: 0}
-  endPoint: {x: 12.361933, y: 6.948495, z: 0}
-  endTangent: {x: 10.790377, y: -3.9060445, z: 0}
-  prevBez: {fileID: 0}
-  baseBez: {fileID: 0}
+  startPoint: {x: 38.784615, y: 0.55675936, z: 4.155619}
+  startTangent: {x: 67.64505, y: 1.1135187, z: 13.478291}
+  endPoint: {x: 0, y: 1.376873, z: 3.7046046}
+  endTangent: {x: 0, y: 2.753746, z: 5.5893655}
+  prevBez: {fileID: 501166914}
+  baseBez: {fileID: 501166915}
   startTangentMagnitude: 1
   endTangentMagnitude: 1
-  approxCurveLength: 0
+  approxCurveLength: 9.980941
 --- !u!4 &501166913
 Transform:
   m_ObjectHideFlags: 0
@@ -262,7 +262,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 501166911}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.433, y: 0.847, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 355509749}
@@ -280,15 +280,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc27d20fef5a5c46970acd7754f787f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPoint: {x: 12.361933, y: 6.948495, z: 0}
-  startTangent: {x: 13.933489, y: 17.803036, z: 0}
-  endPoint: {x: 23.532892, y: 16.57725, z: 1}
-  endTangent: {x: 18.80294, y: 21.559296, z: 0.5}
-  prevBez: {fileID: 501166912}
+  startPoint: {x: 3, y: 1.0649261, z: -2.1688707}
+  startTangent: {x: 8.073437, y: 2.1298523, z: -2.0718112}
+  endPoint: {x: 38.784615, y: 0.55675936, z: 4.155619}
+  endTangent: {x: 9.924174, y: 0, z: -5.1670523}
+  prevBez: {fileID: 501166915}
   baseBez: {fileID: 0}
   startTangentMagnitude: 1
   endTangentMagnitude: 1
-  approxCurveLength: 0
+  approxCurveLength: 10.488133
 --- !u!114 &501166915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,15 +301,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc27d20fef5a5c46970acd7754f787f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPoint: {x: 23.532892, y: 16.57725, z: 1}
-  startTangent: {x: 28.262844, y: 11.595203, z: 1.5}
-  endPoint: {x: -6.544819, y: 1.3132236, z: 0}
-  endTangent: {x: -8.511859, y: -4.60065, z: 0}
-  prevBez: {fileID: 501166914}
-  baseBez: {fileID: 501166912}
+  startPoint: {x: 0, y: 1.376873, z: 3.7046046}
+  startTangent: {x: 0, y: 0, z: 1.8198438}
+  endPoint: {x: 3, y: 1.0649261, z: -2.1688707}
+  endTangent: {x: -2.0734367, y: 0, z: -2.2659302}
+  prevBez: {fileID: 0}
+  baseBez: {fileID: 0}
   startTangentMagnitude: 1
   endTangentMagnitude: 1
-  approxCurveLength: 0
+  approxCurveLength: 8.542968
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -439,11 +439,13 @@ MonoBehaviour:
   myModel: {fileID: 501166913}
   camTransform: {fileID: 534669905}
   curveList:
-  - {fileID: 501166912}
-  - {fileID: 501166914}
   - {fileID: 501166915}
-  moveSpeed: 0.5
+  - {fileID: 501166914}
+  - {fileID: 501166912}
+  t: 0
+  moveSpeed: 15
   rotationSmoothing: 0.1
+  accelerationSpeed: 0.1
 --- !u!1 &1319724431
 GameObject:
   m_ObjectHideFlags: 0
