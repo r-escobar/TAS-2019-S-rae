@@ -14,6 +14,8 @@ public class ThirdPersonCameraController : MonoBehaviour {
     private Transform _cameraLookTarget;
     private Transform _avatarTransform;
     private Rigidbody _avatarRigidbody;
+    private Camera mainCam;
+    private SkinnedMeshRenderer avatarRend;
     #endregion
 
     #region Public Tuning Variables
@@ -34,6 +36,10 @@ public class ThirdPersonCameraController : MonoBehaviour {
     public float standingZoomOutDelay = 1f;
     public float idleDelay = 3f;
     public float objectOfInterestLookupRadius = 10f;
+    public float lookAtOOISmoothing = 0.075f;
+    public EasingFunction.Ease lookAtOOIEase;
+    public float cameraAvoidanceRadius = 1f;
+    public float avoidanceSmoothing = 0.5f;
     #endregion
 
     #region Persistent Outputs
@@ -47,12 +53,13 @@ public class ThirdPersonCameraController : MonoBehaviour {
     private float _followDistance_Applied;
     private float _verticalOffset_Applied;
     
-    private CameraStates curCamState;
+    public CameraStates curCamState;
 
-    private float idleTimer = 0f;
+    public float idleTimer = 0f;
+    private bool startingIdleTimer = false;
 
-    private Collider[] nearbyObjectsOfInterest = new Collider[5];
-    private int numNearbyOOI;
+    public Collider[] nearbyObjectsOfInterest = new Collider[50];
+    public int numNearbyOOI;
     #endregion
 
     
@@ -66,7 +73,9 @@ public class ThirdPersonCameraController : MonoBehaviour {
         _cameraLookTarget = _cameraBaseTransform.Find("CameraLookTarget");
         _avatarTransform = _view.Find("AIThirdPersonController");
         _avatarRigidbody = _avatarTransform.GetComponent<Rigidbody>();
-        
+
+        avatarRend = _avatarTransform.GetChild(0).GetComponent<SkinnedMeshRenderer>();
+        mainCam = Camera.main;
     }
 
     private void Update()
@@ -75,17 +84,18 @@ public class ThirdPersonCameraController : MonoBehaviour {
         {
             curCamState = CameraStates.Manual;
         }
-        else if(idleTimer < idleDelay || (Input.GetMouseButton(0) && curCamState == CameraStates.Idle))
-        {
-            idleTimer = 0f;
-            curCamState = CameraStates.Auto;
-        }
         else
         {
-            curCamState = CameraStates.Idle;
-        }
-
-
+            if (Input.GetMouseButtonDown(0))
+            {
+                _StopIdling();
+                curCamState = CameraStates.Auto;
+            } else if (idleTimer >= idleDelay)
+            {
+                curCamState = CameraStates.Idle;
+            }
+        } 
+        
         switch (curCamState)
         {
             case CameraStates.Manual:
@@ -98,6 +108,8 @@ public class ThirdPersonCameraController : MonoBehaviour {
                 _IdleUpdate();
                 break;
         }
+        
+        AvoidObstacle();
     }
 
     #region States
@@ -138,11 +150,13 @@ public class ThirdPersonCameraController : MonoBehaviour {
             _standingToWalkingSlider = Mathf.Lerp(_standingToWalkingSlider, 1, standingToWalkingSmoothing * 50f * Time.deltaTime);
 
             idleTimer = 0f;
+            startingIdleTimer = false;
         }
         else
         {
             if (standingTimer >= standingZoomOutDelay)
-            {                
+            {
+                startingIdleTimer = true;
                 //_standingToWalkingSlider = Mathf.MoveTowards(_standingToWalkingSlider, 0, Time.deltaTime);
                 //_standingToWalkingSlider = Mathf.Lerp(_standingToWalkingSlider, 0, walkingToStandingSmoothing * 50f * Time.deltaTime);
                 
@@ -175,12 +189,9 @@ public class ThirdPersonCameraController : MonoBehaviour {
     {
         _camRelativePostion_Auto = _avatarTransform.position;
 
-        //_cameraLookTarget.position = _avatarTransform.position + avatarObservationOffset_Base;
         _cameraLookTarget.position = Vector3.Lerp(_cameraLookTarget.position, _avatarTransform.position + avatarObservationOffset_Base, camFollowSmoothing * 50f * Time.deltaTime);
         
         Vector3 camPosTarget = _avatarTransform.position - _avatarLookForward * _followDistance_Applied + Vector3.up * _verticalOffset_Applied;
-        //_cameraTransform.position = camPosTarget;
-        //_cameraTransform.position = Vector3.Lerp(_cameraTransform.position, camPosTarget, camFollowSmoothing * 50f * Time.deltaTime);
         _cameraBaseTransform.position = Vector3.Lerp(_cameraBaseTransform.position, camPosTarget, camFollowSmoothing * 50f * Time.deltaTime);
     }
 
@@ -222,34 +233,89 @@ public class ThirdPersonCameraController : MonoBehaviour {
         numNearbyOOI = Physics.OverlapSphereNonAlloc(_avatarTransform.position, objectOfInterestLookupRadius, nearbyObjectsOfInterest, layerMask);
     }
 
+    private float lookAtOOISlider = 0f;
+    private float lookAtOOIProgress = 0f;
+    Vector3 tgtToOOI = Vector3.zero;
+    private Vector3 oOIToCam;
+    
     private void _LookAtNearestOOI()
     {
         if (numNearbyOOI > 0)
         {
-            float minDist = float.MaxValue;
-            Transform nearestOOITransform = null;
-        
-            for (int i = 0; i < nearbyObjectsOfInterest.Length; i++)
-            {
-                if (nearbyObjectsOfInterest[i] != null)
-                {
-                    Transform curOOITransform = nearbyObjectsOfInterest[i].transform;
-                
-                    float dist = Vector3.Distance(_avatarTransform.position, curOOITransform.position);
-                
-                    if (dist < minDist)
-                    {
-                        nearestOOITransform = curOOITransform;
-                        minDist = dist;
-                    }
-                }
-            }
+            Transform nearestOOITransform = GetNearestTransform(_avatarTransform.position, nearbyObjectsOfInterest);
+
 
             if (nearestOOITransform != null)
             {
-            
+                if (tgtToOOI == Vector3.zero)
+                {
+                    tgtToOOI = nearestOOITransform.position - _cameraLookTarget.position;
+                    tgtToOOI *= 0.5f;
+
+                    oOIToCam = mainCam.transform.position - nearestOOITransform.position;
+                    oOIToCam = _cameraBaseTransform.position + (oOIToCam * 0.5f);
+                    
+                    tgtToOOI = _cameraLookTarget.position + tgtToOOI;
+                }
+                    
+                lookAtOOIProgress += Time.deltaTime * lookAtOOISmoothing;
+                lookAtOOIProgress = Mathf.Min(lookAtOOIProgress, 1f);
+                
+                EasingFunction.Function func = EasingFunction.GetEasingFunction(lookAtOOIEase);
+                lookAtOOISlider = func(0f, 1f, lookAtOOIProgress);
+
+                _cameraLookTarget.position = Vector3.Lerp(_cameraLookTarget.position, tgtToOOI, lookAtOOISlider); 
+                _cameraBaseTransform.position = Vector3.Lerp(_cameraBaseTransform.position, oOIToCam, lookAtOOISlider); 
+
+                _cameraPivotTransform.LookAt(_cameraLookTarget);
+                
+
             }
         }        
+    }
+
+    void _StopIdling()
+    {
+        tgtToOOI = Vector3.zero;
+        startingIdleTimer = false;
+        lookAtOOISlider = 0f;
+        lookAtOOIProgress = 0f;
+        idleTimer = 0f;
+    }
+
+    private float avoidTimer;
+    private float avoidDelay = 2f;
+    void AvoidObstacle()
+    {
+        Collider[] nearbyObstacles = Physics.OverlapSphere(mainCam.transform.position, cameraAvoidanceRadius);
+
+        if (nearbyObstacles.Length > 0)
+        {
+           // Debug.Log("cam is colliding with " + nearbyObstacles[0].gameObject.name);
+            
+            Transform nearestOOITransform = GetNearestTransform(mainCam.transform.position, nearbyObstacles);
+
+            Vector3 objToCam = nearestOOITransform.position - mainCam.transform.position;
+            float distMag = objToCam.magnitude;
+            float avoidMag = cameraAvoidanceRadius - distMag * 20f;
+            
+            mainCam.transform.position = Vector3.MoveTowards(mainCam.transform.position, mainCam.transform.position + objToCam.normalized * avoidMag, Time.deltaTime);
+
+            avoidTimer = 0f;
+        }
+        else
+        {
+            if (avoidTimer >= avoidDelay)
+            {
+                mainCam.transform.localPosition = Vector3.MoveTowards(mainCam.transform.localPosition, Vector3.zero, Time.deltaTime * 0.75f);
+            }
+            else
+            {
+                avoidTimer += Time.deltaTime;
+            }
+        }
+        
+
     }
     #endregion
 
@@ -269,6 +335,38 @@ public class ThirdPersonCameraController : MonoBehaviour {
     }
 
     #endregion
+
+    bool CheckIfVisible(Camera cam, Renderer rend)
+    {
+        return GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(cam), rend.bounds);
+
+    }
+
+    Transform GetNearestTransform(Vector3 pos, Collider[] collList)
+    {
+        float minDist = float.MaxValue;
+        Transform nearestOOITransform = null;
+        
+        for (int i = 0; i < collList.Length; i++)
+        {
+            if (collList[i] != null)
+            {
+                Transform curOOITransform = collList[i].transform;
+                //Debug.Log(curOOITransform.position);
+
+                float dist = Vector3.Distance(pos, curOOITransform.position);
+                
+                if (dist < minDist)
+                {
+                    nearestOOITransform = curOOITransform;
+                    minDist = dist;
+                }
+            }
+        }
+
+        return nearestOOITransform;
+    }
+
 }
 
 public enum CameraStates
