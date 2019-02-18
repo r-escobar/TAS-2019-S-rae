@@ -16,6 +16,7 @@ public class ThirdPersonCameraController : MonoBehaviour {
     private Rigidbody _avatarRigidbody;
     private Camera mainCam;
     private SkinnedMeshRenderer avatarRend;
+    private float startingFOV;
     #endregion
 
     #region Public Tuning Variables
@@ -40,6 +41,13 @@ public class ThirdPersonCameraController : MonoBehaviour {
     public EasingFunction.Ease lookAtOOIEase;
     public float cameraAvoidanceRadius = 1f;
     public float avoidanceSmoothing = 0.5f;
+    public float wormsEyeBack = -0.5f;
+    public float wormsEyeHeight = -0.5f;
+    public float wormLookSmoothing = 0.075f;
+    public EasingFunction.Ease wormLookEase;
+    public float wormLookHeight = 1f;
+    public float wormsEyeFov = 60f;
+    public float camFOVResetSmoothing = 3f;
     #endregion
 
     #region Persistent Outputs
@@ -76,6 +84,8 @@ public class ThirdPersonCameraController : MonoBehaviour {
 
         avatarRend = _avatarTransform.GetChild(0).GetComponent<SkinnedMeshRenderer>();
         mainCam = Camera.main;
+
+        startingFOV = mainCam.fieldOfView;
     }
 
     private void Update()
@@ -84,11 +94,14 @@ public class ThirdPersonCameraController : MonoBehaviour {
         {
             curCamState = CameraStates.Manual;
         }
-        else
+        else if (Input.GetKey(KeyCode.W) && !_Helper_IsWalking())
         {
-            if (Input.GetMouseButtonDown(0))
+            curCamState = CameraStates.Worm;
+        } else {
+            if (Input.GetMouseButtonDown(0) || curCamState == CameraStates.Manual || curCamState == CameraStates.Worm)
             {
                 _StopIdling();
+                _StopWorming();
                 curCamState = CameraStates.Auto;
             } else if (idleTimer >= idleDelay)
             {
@@ -107,7 +120,13 @@ public class ThirdPersonCameraController : MonoBehaviour {
             case CameraStates.Idle:
                 _IdleUpdate();
                 break;
+            case CameraStates.Worm:
+                _WormUpdate();
+                break;
         }
+        
+        if(curCamState != CameraStates.Worm)
+            mainCam.fieldOfView = Mathf.Lerp(mainCam.fieldOfView, startingFOV, 0.5f);
         
         AvoidObstacle();
     }
@@ -130,6 +149,12 @@ public class ThirdPersonCameraController : MonoBehaviour {
         _FindObjectsOfInterest();
         _LookAtNearestOOI();
     }
+
+    private void _WormUpdate()
+    {
+        LookUpFromFeet();
+    }
+    
     #endregion
 
     #region Internal Logic
@@ -204,7 +229,7 @@ public class ThirdPersonCameraController : MonoBehaviour {
 
     private void _ManualControl()
     {
-        Vector3 _camEulerHold = _cameraTransform.localEulerAngles;
+        Vector3 _camEulerHold = _cameraPivotTransform.localEulerAngles;
 
         if (Input.GetAxis("Mouse X") != 0)
             _camEulerHold.y += Input.GetAxis("Mouse X");
@@ -223,7 +248,7 @@ public class ThirdPersonCameraController : MonoBehaviour {
         }
 
         //Debug.Log("The V3 to be applied is " + _camEulerHold);
-        _cameraTransform.localRotation = Quaternion.Slerp(_cameraTransform.localRotation, Quaternion.Euler(_camEulerHold), manualCameraLookSmoothing);
+        _cameraPivotTransform.localRotation = Quaternion.Slerp(_cameraPivotTransform.localRotation, Quaternion.Euler(_camEulerHold), manualCameraLookSmoothing);
     }
 
     private void _FindObjectsOfInterest()
@@ -314,8 +339,28 @@ public class ThirdPersonCameraController : MonoBehaviour {
                 avoidTimer += Time.deltaTime;
             }
         }
-        
+    }
 
+    private float wormLookProgress;
+    private float wormLookSlider;
+    void LookUpFromFeet()
+    {
+        wormLookProgress += Time.deltaTime * wormLookSmoothing;
+        wormLookProgress = Mathf.Min(wormLookProgress, 1f);
+                
+        EasingFunction.Function func = EasingFunction.GetEasingFunction(wormLookEase);
+        wormLookSlider = func(0f, 1f, wormLookProgress);
+
+        _cameraLookTarget.position = Vector3.Lerp(_cameraLookTarget.position, _avatarTransform.position + Vector3.up * wormLookHeight, Mathf.Min(wormLookProgress * 1.15f, 1f)); 
+        _cameraBaseTransform.position = Vector3.Lerp(_cameraBaseTransform.position, _avatarTransform.position + _avatarTransform.forward * wormsEyeBack + Vector3.up * wormsEyeHeight, wormLookSlider);
+        mainCam.fieldOfView = Mathf.Lerp(mainCam.fieldOfView, wormsEyeFov, wormLookSlider);
+        _cameraPivotTransform.LookAt(_cameraLookTarget);
+    }
+
+    void _StopWorming()
+    {
+        wormLookProgress = 0f;
+        wormLookSlider = 0f;
     }
     #endregion
 
@@ -334,7 +379,7 @@ public class ThirdPersonCameraController : MonoBehaviour {
         else return false;
     }
 
-    #endregion
+    
 
     bool CheckIfVisible(Camera cam, Renderer rend)
     {
@@ -366,12 +411,13 @@ public class ThirdPersonCameraController : MonoBehaviour {
 
         return nearestOOITransform;
     }
-
+    #endregion
 }
 
 public enum CameraStates
 {
     Auto,
     Manual,
-    Idle
+    Idle, 
+    Worm
 };
