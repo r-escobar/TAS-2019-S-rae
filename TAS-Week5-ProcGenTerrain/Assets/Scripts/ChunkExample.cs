@@ -7,7 +7,6 @@ public class ChunkExample : MonoBehaviour
 {
     private MeshFilter _myMF;
     private MeshRenderer _myMR;
-
     private Mesh _myMesh;
 
     private Vector3[] _verts;
@@ -16,25 +15,23 @@ public class ChunkExample : MonoBehaviour
     private Vector3[] _normals;
 
     public int sizeSquare;
-    public float amplitude = 6f;
-    public float scale = 8f;
+    public float amplitude = 6f; // controls terrain height
+    public float scale = 8f; // how much to "zoom" into the noise
     
     private int _totalVertInd;
     private int _totalTrisInd;
     private int borderSize;
 
     private bool meshHasBeenGenerated = false;
+        
     
-    private List<int> vertsToDelete = new List<int>();
+    private List<Vector3> initialVertList = new List<Vector3>();
+    private List<int> initialTriList = new List<int>();
+    private List<Vector3> initialNormalList = new List<Vector3>();
     
-    
-    public List<Vector3> initialVertList = new List<Vector3>();
-    public List<int> initialTriList = new List<int>();
-    public List<Vector3> initialNormalList = new List<Vector3>();
-    
-    public List<Vector3> actualVertList = new List<Vector3>();
-    public List<int> actualTriList = new List<int>();
-    public List<Vector3> actualNormalList = new List<Vector3>();
+    private List<Vector3> actualVertList = new List<Vector3>();
+    private List<int> actualTriList = new List<int>();
+    private List<Vector3> actualNormalList = new List<Vector3>();
     
     private void Awake()
     {
@@ -60,7 +57,9 @@ public class ChunkExample : MonoBehaviour
             return;
         meshHasBeenGenerated = true;
         
+        // adjust sizeSquare to account for extra border vertices
         sizeSquare += 2;
+        
         _Init();
         _CalcMesh();
         _ApplyMesh();
@@ -90,12 +89,9 @@ public class ChunkExample : MonoBehaviour
                         ((float)z + transform.position.z) / scale), 
                     (-sizeSquare / 2f) +  z);
 
-                if (isBorderVertex)
+                if (!isBorderVertex)
                 {
-                    vertsToDelete.Add((z * (sizeSquare + 1)) + x);
-                }
-                else
-                {
+                    // if this isn't a border vertex, put it into the final vertex list
                     actualVertList.Add(newVertPos);
                 }
                 
@@ -167,11 +163,17 @@ public class ChunkExample : MonoBehaviour
     
     private void _ApplyMesh()
     {
+        // initial grid of vertices (including border verts)
         initialVertList = new List<Vector3>(_verts);
         initialTriList = new List<int>(_tris);
+        
+        // calculate normals based on the expanded grid (to generate accurate normals for the vertices we actually keep)
         initialNormalList = new List<Vector3>(CalculateNormals(initialTriList, initialVertList.ToArray()));
 
+        // get triangles based on the true vertex list
         GetActualTriangles();
+        
+        // adjust the normals list to only include normals that correspond to non-border verts
         TrimNormals();
         _myMesh.vertices = actualVertList.ToArray();
         _myMesh.triangles = actualTriList.ToArray();
