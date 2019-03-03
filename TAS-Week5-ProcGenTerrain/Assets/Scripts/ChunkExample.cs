@@ -5,18 +5,19 @@ using UnityEngine;
 
 public class ChunkExample : MonoBehaviour
 {
+    #region Internal References
     private MeshFilter _myMF;
     private MeshRenderer _myMR;
     private Mesh _myMesh;
-
-    private Vector3[] _verts;
-    private int[] _tris;
-    private Vector2[] _uVs;
-    private Vector3[] _normals;
+    #endregion
 
     public int sizeSquare;
-    public float amplitude = 6f; // controls terrain height
+    public float startAmplitude = 6f; // controls terrain height
     public float scale = 8f; // how much to "zoom" into the noise
+    public float startFrequency = 1f;
+    public float persistance = 0.5f; // decrease in amplitude of octaves
+    public float lacunarity = 2f; // increase in frequency of octaves
+    public int octaves = 3; // number of noise octaves
     
     private int _totalVertInd;
     private int _totalTrisInd;
@@ -25,6 +26,12 @@ public class ChunkExample : MonoBehaviour
     private bool meshHasBeenGenerated = false;
         
     
+    #region Internal Data
+    private Vector3[] _verts;
+    private int[] _tris;
+    private Vector2[] _uVs;
+    private Vector3[] _normals;
+    
     private List<Vector3> initialVertList = new List<Vector3>();
     private List<int> initialTriList = new List<int>();
     private List<Vector3> initialNormalList = new List<Vector3>();
@@ -32,6 +39,7 @@ public class ChunkExample : MonoBehaviour
     private List<Vector3> actualVertList = new List<Vector3>();
     private List<int> actualTriList = new List<int>();
     private List<Vector3> actualNormalList = new List<Vector3>();
+    #endregion
     
     private void Awake()
     {
@@ -83,11 +91,23 @@ public class ChunkExample : MonoBehaviour
             {
                 bool isBorderVertex = (z == 0 || z == sizeSquare || x == 0 || x == sizeSquare);
 
-                Vector3 newVertPos = new Vector3((-sizeSquare / 2f) +  x, 
-                    amplitude * Perlin.Noise(
-                        ((float)x + transform.position.x) / scale, 
-                        ((float)z + transform.position.z) / scale), 
-                    (-sizeSquare / 2f) +  z);
+
+                float amplitude = startAmplitude;
+                float frequency = startFrequency;
+                float noiseHeight = 0f;
+                
+                for (int i = 0; i < octaves; i++) {
+                    float sampleX = ((float)x + transform.position.x) / scale * frequency;
+                    float sampleZ = ((float)z + transform.position.z) / scale * frequency;
+
+                    float perlinValue = Mathf.PerlinNoise (sampleX, sampleZ) * 2 - 1;
+                    noiseHeight += perlinValue * amplitude;
+
+                    amplitude *= persistance;
+                    frequency *= lacunarity;
+                }
+                
+                Vector3 newVertPos = new Vector3((-sizeSquare / 2f) +  x, noiseHeight, (-sizeSquare / 2f) +  z);
 
                 if (!isBorderVertex)
                 {

@@ -44,5 +44,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sizeSquare: 16
-  amplitude: 6
-  scale: 10
+  startAmplitude: 12
+  scale: 20
+  startFrequency: 0.6
+  persistance: 0.5
+  lacunarity: 2
+  octaves: 3
