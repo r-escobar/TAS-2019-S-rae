@@ -14,16 +14,15 @@ public class FlockManager : MonoBehaviour
     
     void Start()
     {
-        float rCubed = 3 * numberOfSpawns / (4 * Mathf.PI * density);
-        float r = Mathf.Pow(rCubed, .33f);
+        float radius = Mathf.Pow(numberOfSpawns / (4 * Mathf.PI * density), 0.33f);
 
         for (int i = 0; i < numberOfSpawns; i++)
         {
-            _allMyAgents.Add(Instantiate(myAutoAgentPrefab, Random.insideUnitSphere * r, Quaternion.identity, transform));
+            _allMyAgents.Add(Instantiate(myAutoAgentPrefab, Random.insideUnitSphere * radius, Quaternion.identity, transform));
         }
     }
 
-    Collider[] collInRad = new Collider[1];
+    Collider[] collInRad = new Collider[10];
 
     void Update()
     {
@@ -32,8 +31,6 @@ public class FlockManager : MonoBehaviour
             AutoAgentBehavior a = g.GetComponent<AutoAgentBehavior>();
             
             Physics.OverlapSphereNonAlloc(g.transform.position, detectionRadius, collInRad);
-
-            // Currently getting a ref to itself so may do something weird
 
             a.PassArrayOfContext(collInRad);
         }
