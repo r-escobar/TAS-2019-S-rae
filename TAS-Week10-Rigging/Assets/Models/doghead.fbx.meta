@@ -1,76 +1,58 @@
 fileFormatVersion: 2
-guid: 9c04f41daff96d04989ea604e3cf322a
+guid: be6a2077b1258d840aea110d785ba5be
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: Armature
-    100002: Cube
-    100004: Foot.L
-    100006: Foot.R
-    100008: Hand.L
-    100010: Hand.L_end
-    100012: Hand.R
-    100014: Hand.R_end
-    100016: Head
-    100018: Head_end
-    100020: Hips
-    100022: LowerArm.L
-    100024: LowerArm.R
-    100026: LowerLeg.L
-    100028: LowerLeg.R
-    100030: Neck
-    100032: Pelvis.L
-    100034: Pelvis.R
-    100036: Shoulder.L
-    100038: Shoulder.R
-    100040: Spine1
-    100042: Spine2
-    100044: Spine3
-    100046: Toes.L
-    100048: Toes.L_end
-    100050: Toes.R
-    100052: Toes.R_end
-    100054: //RootNode
-    100056: UpperArm.L
-    100058: UpperArm.R
-    100060: UpperLeg.L
-    100062: UpperLeg.R
+    100002: //RootNode
+    100004: DogHeadMesh
+    100006: EarBase.L
+    100008: EarBase.L.001
+    100010: EarBase.R
+    100012: EarBase.R.001
+    100014: EarMid.L
+    100016: EarMid.R
+    100018: EarTip.L
+    100020: EarTip.L_end
+    100022: EarTip.R
+    100024: EarTip.R_end
+    100026: Head
+    100028: Head.004
+    100030: Head.004_end
+    100032: LowerMouth
+    100034: LowerMouth_end
+    100036: TailBase
+    100038: TailMid
+    100040: TailTip
+    100042: UpperMouth
+    100044: UpperMouth_end
     400000: Armature
-    400002: Cube
-    400004: Foot.L
-    400006: Foot.R
-    400008: Hand.L
-    400010: Hand.L_end
-    400012: Hand.R
-    400014: Hand.R_end
-    400016: Head
-    400018: Head_end
-    400020: Hips
-    400022: LowerArm.L
-    400024: LowerArm.R
-    400026: LowerLeg.L
-    400028: LowerLeg.R
-    400030: Neck
-    400032: Pelvis.L
-    400034: Pelvis.R
-    400036: Shoulder.L
-    400038: Shoulder.R
-    400040: Spine1
-    400042: Spine2
-    400044: Spine3
-    400046: Toes.L
-    400048: Toes.L_end
-    400050: Toes.R
-    400052: Toes.R_end
-    400054: //RootNode
-    400056: UpperArm.L
-    400058: UpperArm.R
-    400060: UpperLeg.L
-    400062: UpperLeg.R
+    400002: //RootNode
+    400004: DogHeadMesh
+    400006: EarBase.L
+    400008: EarBase.L.001
+    400010: EarBase.R
+    400012: EarBase.R.001
+    400014: EarMid.L
+    400016: EarMid.R
+    400018: EarTip.L
+    400020: EarTip.L_end
+    400022: EarTip.R
+    400024: EarTip.R_end
+    400026: Head
+    400028: Head.004
+    400030: Head.004_end
+    400032: LowerMouth
+    400034: LowerMouth_end
+    400036: TailBase
+    400038: TailMid
+    400040: TailTip
+    400042: UpperMouth
+    400044: UpperMouth_end
     2100000: No Name
-    4300000: Cube
+    4300000: DogHeadMesh
     9500000: //RootNode
-    13700000: Cube
+    13700000: DogHeadMesh
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -126,7 +108,7 @@ ModelImporter:
     previousCalculatedGlobalScale: 0.01
     hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
-    normalSmoothAngle: 60
+    normalSmoothAngle: 180
     normalImportMode: 1
     tangentImportMode: 3
     normalCalculationMode: 4
