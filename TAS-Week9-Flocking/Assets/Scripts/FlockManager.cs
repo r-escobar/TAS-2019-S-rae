@@ -15,7 +15,7 @@ public class FlockManager : MonoBehaviour
     void Start()
     {
         float radius = Mathf.Pow(numberOfSpawns / (4 * Mathf.PI * density), 0.33f);
-
+ 
         for (int i = 0; i < numberOfSpawns; i++)
         {
             _allMyAgents.Add(Instantiate(myAutoAgentPrefab, Random.insideUnitSphere * radius, Quaternion.identity, transform));
